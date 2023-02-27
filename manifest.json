@@ -1,32 +1,27 @@
 {
-    "name": "Chess.com Assistant",
-    "version": "1.0",
-    "description": "The cheating tool that invoke backend stockfish to find the best move when you play",
-    "manifest_version": 3,
-    "permissions": [
-        "storage",
-        "activeTab",
-        "scripting"
-    ],
-    "options_ui": {
-        "page": "html/options.html",
-        "open_in_tab": false
-    },
-    "icons": {
-        "16": "images/favicon-32x32.png",
-        "32": "images/favicon-32x32.png",
-        "48": "images/favicon-32x32.png",
-        "128": "images/favicon-32x32.png"
-    },
-    "content_scripts": [
-        {
-            "matches": [
-                "https://www.chess.com/game/*",
-                "https://www.chess.com/play/*"
-            ],
-            "js": [
-                "scripts/bestmove.js"
-            ]
-        }
-    ]
+  "name": "Chess.com Assistant",
+  "version": "1.0",
+  "description": "The cheating tool that invoke backend stockfish to find the best move when you play",
+  "manifest_version": 3,
+  "permissions": ["storage", "activeTab", "scripting"],
+  "options_ui": {
+    "page": "html/options.html",
+    "open_in_tab": false
+  },
+  "icons": {
+    "16": "images/favicon-32x32.png",
+    "32": "images/favicon-32x32.png",
+    "48": "images/favicon-32x32.png",
+    "128": "images/favicon-32x32.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.chess.com/game/*",
+        "https://www.chess.com/play/*"
+      ],
+      "js": ["scripts/bestmove.js"],
+      "css": ["styles/chess.css"]
+    }
+  ]
 }

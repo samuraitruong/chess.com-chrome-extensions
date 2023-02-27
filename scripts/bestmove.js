@@ -1,5 +1,6 @@
 const space = "_";
 let lastFen = "";
+let bestMovePopup;
 
 const debounce = (func, delay) => {
   let debounceTimer;
@@ -51,14 +52,14 @@ function readCurrentBoardFen() {
   const whoMoveNext = whiteMoves.length > blackMoves.length ? "b" : "w";
 
   //const kq = 'KQkq'
-  const kq = "- -";
+  const kq = kqStatus();
   return [`${board} ${whoMoveNext} ${kq} - 1 0 `, hasPiece, whoMoveNext];
 }
 function findBestMove() {
   const [currentBoardFen, hasPiece, whoMoveNext] = readCurrentBoardFen();
   // console.log(currentBoardFen, whoMoveNext);
   if (lastFen !== currentBoardFen && hasPiece) {
-    // console.log(finalFen)
+    // console.log(currentBoardFen);
     lastFen = currentBoardFen;
     fetch(
       "https://no-cors-way.herokuapp.com/cors/https://stockfish-chess-api-p7dmqtfpta-km.a.run.app/bestmove?fen=" +
@@ -68,28 +69,110 @@ function findBestMove() {
       .then((x) => x.json())
       .then((result) => {
         let [refreshBoardFen] = readCurrentBoardFen();
-        if (lastFen === refreshBoardFen) {
+        console.log(lastFen, refreshBoardFen);
+        if (lastFen === refreshBoardFen || lastFen === "") {
           console.log(
             `%cBest move for ${whoMoveNext}: ${result.result.bestmove}`,
-            "color: green; font-size: 60px; font-weight: bold;"
+            "color: green; font-size: 45px; font-weight: bold;"
           );
+          updateUI(result.result.bestmove, whoMoveNext);
         } else console.log("Board out of sync...");
       });
   }
 }
 
+function kqStatus() {
+  const w = getCastleingStatus("w");
+  const b = getCastleingStatus("b");
+
+  if (w == "-" && b === "-") return "- -";
+  return w + b;
+}
+function getCastleingStatus(mover) {
+  let king = mover === "b" ? "king-black" : "white-king";
+  let query = mover === "b" ? ".black.node" : ".white.node";
+  const findMoves = [...document.querySelectorAll(query + " span")].map((x) =>
+    x.getAttribute("data-figurine")
+  );
+
+  const allMoves = [...document.querySelectorAll(query)].map((x) =>
+    x.textContent.trim()
+  );
+
+  const testMoves = [...allMoves, ...findMoves];
+  console.log(mover, testMoves);
+  if (
+    testMoves.includes("K") ||
+    testMoves.includes("R") ||
+    testMoves.includes("O-O") ||
+    testMoves.includes("O-O-0")
+  ) {
+    return "-";
+  }
+
+  if (mover === "b") return "kq";
+  return "KQ";
+}
+function updateUI(move, who) {
+  if (move) {
+    const start = move.substr(0, 2);
+    const end = move.substr(2, 2);
+
+    const startPost = start.charCodeAt(0) - 96;
+    const endPos = end.charCodeAt(0) - 96;
+    const startSquare = startPost + start[1];
+    const endSquare = endPos + end[1];
+    const div = document.querySelector(".best-move ." + who);
+    div.innerText = move;
+
+    div.setAttribute("data-start-square", "square-" + startSquare);
+    div.setAttribute("data-end-square", "square-" + endSquare);
+  }
+}
+function initialisesdUI() {
+  if (!bestMovePopup) {
+    bestMovePopup = document.createElement("div");
+    const bDiv = document.createElement("div");
+    const wDiv = document.createElement("div");
+    bestMovePopup.appendChild(bDiv);
+    bestMovePopup.appendChild(wDiv);
+    document.body.appendChild(bestMovePopup);
+
+    bestMovePopup.setAttribute("class", "best-move");
+    bDiv.setAttribute("class", "w");
+    wDiv.setAttribute("class", "b");
+
+    bDiv.innerText = "...";
+    wDiv.innerText = "...";
+    bestMovePopup.addEventListener("click", () => {
+      const start = document
+        .querySelector(".best-move")
+        .getAttribute("data-start-square");
+      const end = document
+        .querySelector(".best-move")
+        .getAttribute("data-end-square");
+      document.querySelector("." + start).click();
+    });
+  }
+}
+
 const mutationCallback = debounce(() => {
+  initialisesdUI();
   findBestMove();
 }, 500);
 
 findBestMove();
 
+//addEventListener("DOMContentLoaded", (event) => {
 setTimeout(() => {
   findBestMove();
+  initialisesdUI();
+
   const o = new MutationObserver(mutationCallback);
 
   o.observe(document.querySelector(".board"), {
     attributes: true,
     childList: true,
   });
-}, 3000);
+}, 1000);
+//});
