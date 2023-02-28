@@ -21,7 +21,7 @@
         "https://www.chess.com/play/*"
       ],
       "js": ["scripts/bestmove.js"],
-      "css": ["styles/chess.css"]
+      "css": ["styles/chess.css", "styles/spinners.css"]
     }
   ]
 }

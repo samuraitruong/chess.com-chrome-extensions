@@ -1,7 +1,7 @@
 const space = "_";
 let lastFen = "";
 let bestMovePopup;
-
+const defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 1 0";
 const debounce = (func, delay) => {
   let debounceTimer;
   return function () {
@@ -53,7 +53,7 @@ function readCurrentBoardFen() {
 
   //const kq = 'KQkq'
   const kq = kqStatus();
-  return [`${board} ${whoMoveNext} ${kq} - 1 0 `, hasPiece, whoMoveNext];
+  return [`${board} ${whoMoveNext} ${kq} - 1 0`, hasPiece, whoMoveNext];
 }
 function findBestMove() {
   const [currentBoardFen, hasPiece, whoMoveNext] = readCurrentBoardFen();
@@ -61,6 +61,7 @@ function findBestMove() {
   if (lastFen !== currentBoardFen && hasPiece) {
     // console.log(currentBoardFen);
     lastFen = currentBoardFen;
+    updateUI(null, whoMoveNext);
     fetch(
       "https://no-cors-way.herokuapp.com/cors/https://stockfish-chess-api-p7dmqtfpta-km.a.run.app/bestmove?fen=" +
         lastFen
@@ -69,14 +70,21 @@ function findBestMove() {
       .then((x) => x.json())
       .then((result) => {
         let [refreshBoardFen] = readCurrentBoardFen();
-        console.log(lastFen, refreshBoardFen);
-        if (lastFen === refreshBoardFen || lastFen === "") {
+        console.log({ lastFen, refreshBoardFen });
+        if (
+          lastFen === refreshBoardFen ||
+          lastFen === "" ||
+          lastFen === defaultFEN
+        ) {
           console.log(
             `%cBest move for ${whoMoveNext}: ${result.result.bestmove}`,
             "color: green; font-size: 45px; font-weight: bold;"
           );
           updateUI(result.result.bestmove, whoMoveNext);
-        } else console.log("Board out of sync...");
+        } else {
+          console.log("Board out of sync...");
+          //
+        }
       });
   }
 }
@@ -100,7 +108,6 @@ function getCastleingStatus(mover) {
   );
 
   const testMoves = [...allMoves, ...findMoves];
-  console.log(mover, testMoves);
   if (
     testMoves.includes("K") ||
     testMoves.includes("R") ||
@@ -114,6 +121,9 @@ function getCastleingStatus(mover) {
   return "KQ";
 }
 function updateUI(move, who) {
+  const div = document.querySelector(`.best-move .move-${who}`);
+  div.innerText = move;
+
   if (move) {
     const start = move.substr(0, 2);
     const end = move.substr(2, 2);
@@ -122,28 +132,30 @@ function updateUI(move, who) {
     const endPos = end.charCodeAt(0) - 96;
     const startSquare = startPost + start[1];
     const endSquare = endPos + end[1];
-    const div = document.querySelector(".best-move ." + who);
-    div.innerText = move;
-
+    div.parentNode.setAttribute("class", "idle " + who);
     div.setAttribute("data-start-square", "square-" + startSquare);
     div.setAttribute("data-end-square", "square-" + endSquare);
+  } else {
+    div.parentNode.setAttribute("class", "waiting " + who);
   }
 }
 function initialisesdUI() {
   if (!bestMovePopup) {
     bestMovePopup = document.createElement("div");
     const bDiv = document.createElement("div");
+    bDiv.setAttribute("class", "b");
     const wDiv = document.createElement("div");
-    bestMovePopup.appendChild(bDiv);
+    wDiv.setAttribute("class", "w");
+
     bestMovePopup.appendChild(wDiv);
+    bestMovePopup.appendChild(bDiv);
     document.body.appendChild(bestMovePopup);
 
     bestMovePopup.setAttribute("class", "best-move");
-    bDiv.setAttribute("class", "w");
-    wDiv.setAttribute("class", "b");
 
-    bDiv.innerText = "...";
-    wDiv.innerText = "...";
+    bDiv.innerHTML = `<span class="move-b"></span><span class="loading dot2"></span>`;
+    wDiv.innerHTML = `<span class="move-w"></span><span class="loading dot2"></span>`;
+
     bestMovePopup.addEventListener("click", () => {
       const start = document
         .querySelector(".best-move")
@@ -157,22 +169,18 @@ function initialisesdUI() {
 }
 
 const mutationCallback = debounce(() => {
+  console.log("board change");
   initialisesdUI();
   findBestMove();
-}, 500);
+}, 250);
 
-findBestMove();
-
-//addEventListener("DOMContentLoaded", (event) => {
-setTimeout(() => {
-  findBestMove();
+window.addEventListener("load", (event) => {
   initialisesdUI();
-
+  findBestMove();
   const o = new MutationObserver(mutationCallback);
 
   o.observe(document.querySelector(".board"), {
     attributes: true,
     childList: true,
   });
-}, 1000);
-//});
+});
