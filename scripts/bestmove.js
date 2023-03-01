@@ -70,7 +70,6 @@ function findBestMove() {
       .then((x) => x.json())
       .then((result) => {
         let [refreshBoardFen] = readCurrentBoardFen();
-        console.log({ lastFen, refreshBoardFen });
         if (
           lastFen === refreshBoardFen ||
           lastFen === "" ||
@@ -169,7 +168,6 @@ function initialisesdUI() {
 }
 
 const mutationCallback = debounce(() => {
-  console.log("board change");
   initialisesdUI();
   findBestMove();
 }, 250);
