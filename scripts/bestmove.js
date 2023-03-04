@@ -168,6 +168,7 @@ function initialisesdUI() {
 }
 
 const mutationCallback = debounce(() => {
+  console.log("SDfdsS");
   initialisesdUI();
   findBestMove();
 }, 250);
@@ -182,3 +183,10 @@ window.addEventListener("load", (event) => {
     childList: true,
   });
 });
+
+setInterval(() => {
+  const [fen] = readCurrentBoardFen();
+  if (fen !== lastFen) {
+    findBestMove();
+  }
+}, 5000);
