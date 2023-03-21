@@ -55,36 +55,41 @@ function readCurrentBoardFen() {
   const kq = kqStatus();
   return [`${board} ${whoMoveNext} ${kq} - 1 0`, hasPiece, whoMoveNext];
 }
-function findBestMove() {
-  const [currentBoardFen, hasPiece, whoMoveNext] = readCurrentBoardFen();
+async function findBestMove() {
+  const [currentBoardFen, hasPiece, whoMoveNext] = readCurrentBoardFen(); //await getFenFromUI(); //
   // console.log(currentBoardFen, whoMoveNext);
-  if (lastFen !== currentBoardFen && hasPiece) {
+  if (currentBoardFen && lastFen !== currentBoardFen && hasPiece) {
     // console.log(currentBoardFen);
     lastFen = currentBoardFen;
     updateUI(null, whoMoveNext);
-    fetch(
-      "https://no-cors-way.herokuapp.com/cors/https://stockfish-chess-api-p7dmqtfpta-km.a.run.app/bestmove?fen=" +
-        lastFen
-    )
-      .catch(console.error)
-      .then((x) => x.json())
-      .then((result) => {
-        let [refreshBoardFen] = readCurrentBoardFen();
-        if (
-          lastFen === refreshBoardFen ||
-          lastFen === "" ||
-          lastFen === defaultFEN
-        ) {
-          console.log(
-            `%cBest move for ${whoMoveNext}: ${result.result.bestmove}`,
-            "color: green; font-size: 45px; font-weight: bold;"
-          );
-          updateUI(result.result.bestmove, whoMoveNext);
-        } else {
-          console.log("Board out of sync...");
-          //
-        }
-      });
+    const result = await (
+      await fetch(
+        "https://no-cors.fly.dev/cors/https://stockfish-chess-api-p7dmqtfpta-km.a.run.app/bestmove?fen=" +
+          lastFen
+      )
+    ).json();
+
+    let [refreshBoardFen] = await readCurrentBoardFen();
+    // console.log("refreshBoardFen", refreshBoardFen, lastFen);
+    const boardOnly = refreshBoardFen.split(" ")[0];
+    const lastBoard = lastFen.split(" ")[0];
+
+    if (
+      lastBoard === boardOnly ||
+      lastBoard === "" ||
+      lastBoard === defaultFEN
+    ) {
+      console.log(
+        `%cBest move for ${whoMoveNext}: ${result.result.bestmove}`,
+        `color: ${
+          whoMoveNext === "w" ? "green" : "red"
+        }; font-size: 45px; font-weight: bold;`
+      );
+      updateUI(result.result.bestmove, whoMoveNext);
+    } else {
+      console.log("Board out of sync...");
+      //
+    }
   }
 }
 
@@ -168,10 +173,9 @@ function initialisesdUI() {
 }
 
 const mutationCallback = debounce(() => {
-  console.log("SDfdsS");
   initialisesdUI();
   findBestMove();
-}, 250);
+}, 500);
 
 window.addEventListener("load", (event) => {
   initialisesdUI();
@@ -184,9 +188,47 @@ window.addEventListener("load", (event) => {
   });
 });
 
-setInterval(() => {
+async function getFenFromUI() {
+  return new Promise((resolve) => {
+    const button = document.querySelector("span.download");
+    if (button) {
+      document.querySelector("span.download").parentNode.click();
+      const className =
+        document
+          .querySelector("#board-layout-chessboard")
+          .getAttribute("class") || "";
+
+      document
+        .querySelector("#board-layout-chessboard")
+        .setAttribute("class", className + " chess-ext-hidden-ui");
+      let intervalId = setInterval(() => {
+        const value = document.querySelector(
+          ".share-menu-tab-pgn-section input"
+        )?.value;
+        if (value) {
+          clearInterval(intervalId);
+          document.querySelector(".ui_outside-close-icon").click();
+          const whoMoveNext = value.split(" ")[1];
+
+          document
+            .querySelector("#board-layout-chessboard")
+            .setAttribute(
+              "class",
+              className.replace("chess-ext-hidden-ui", "")
+            );
+          resolve([value, true, whoMoveNext]);
+        }
+      }, 10);
+    } else {
+      resolve([""]);
+    }
+  });
+}
+
+setInterval(async () => {
   const [fen] = readCurrentBoardFen();
-  if (fen !== lastFen) {
+
+  if (fen.split(" ")[0] !== lastFen.split(" ")[0]) {
     findBestMove();
   }
 }, 5000);
