@@ -2,6 +2,7 @@ const space = "_";
 let lastFen = "";
 let bestMovePopup;
 const defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 1 0";
+const STOCKFISH_DEPTH = 15;
 const debounce = (func, delay) => {
   let debounceTimer;
   return function () {
@@ -55,7 +56,10 @@ function readCurrentBoardFen() {
   const kq = kqStatus();
   return [`${board} ${whoMoveNext} ${kq} - 1 0`, hasPiece, whoMoveNext];
 }
-async function findBestMove() {
+async function findBestMove(force = false) {
+  if (force) {
+    lastFen = "";
+  }
   const [currentBoardFen, hasPiece, whoMoveNext] = readCurrentBoardFen(); //await getFenFromUI(); //
   // console.log(currentBoardFen, whoMoveNext);
   if (currentBoardFen && lastFen !== currentBoardFen && hasPiece) {
@@ -64,8 +68,7 @@ async function findBestMove() {
     updateUI(null, whoMoveNext);
     const result = await (
       await fetch(
-        "https://no-cors.fly.dev/cors/https://stockfish-chess-api-p7dmqtfpta-km.a.run.app/bestmove?fen=" +
-          lastFen
+        `https://no-cors.fly.dev/cors/https://stockfish-chess-api-p7dmqtfpta-km.a.run.app/bestmove?depth=${STOCKFISH_DEPTH}&fen=${lastFen}`
       )
     ).json();
 
@@ -79,13 +82,7 @@ async function findBestMove() {
       lastBoard === "" ||
       lastBoard === defaultFEN
     ) {
-      console.log(
-        `%cBest move for ${whoMoveNext}: ${result.result.bestmove}`,
-        `color: ${
-          whoMoveNext === "w" ? "green" : "red"
-        }; font-size: 45px; font-weight: bold;`
-      );
-      updateUI(result.result.bestmove, whoMoveNext);
+      updateUI(result.result, whoMoveNext);
     } else {
       console.log("Board out of sync...");
       //
@@ -124,13 +121,43 @@ function getCastleingStatus(mover) {
   if (mover === "b") return "kq";
   return "KQ";
 }
-function updateUI(move, who) {
-  const div = document.querySelector(`.best-move .move-${who}`);
-  div.innerText = move;
+function updateUI(result, who) {
+  if (!result) {
+    return;
+  }
+  const { bestmove, info } = result;
+  const matchedMoves =
+    info.filter((x) => x.pv && x.pv.includes(bestmove)) || [];
+  const matesMove = matchedMoves.filter((x) => x.score?.unit === "mate");
 
-  if (move) {
-    const start = move.substr(0, 2);
-    const end = move.substr(2, 2);
+  matesMove.sort((a, b) => {
+    return b.score?.value - a.score?.value;
+  });
+
+  const allBestMoves = [...matesMove, ...matchedMoves];
+  const div = document.querySelector(`.best-move .move-${who}`);
+  div.innerText = bestmove;
+
+  if (bestmove) {
+    console.log(
+      `%cBest move for ${who}: ${bestmove}`,
+      `color: ${
+        who === "w" ? "green" : "red"
+      }; font-size: 45px; font-weight: bold;`
+    );
+
+    for (let i = 0; i < Math.min(3, allBestMoves.length); i++) {
+      const item = allBestMoves[i];
+      if (item) {
+        const message = `${item.score.unit}(${item.score?.value}) -> ${item.pv}`;
+        if (i === 0) {
+          div.setAttribute("title", message);
+        }
+        console.log(`%c${i + 1}. ${message}`, "color: blue; font-size: 20px;");
+      }
+    }
+    const start = bestmove.substr(0, 2);
+    const end = bestmove.substr(2, 2);
 
     const startPost = start.charCodeAt(0) - 96;
     const endPos = end.charCodeAt(0) - 96;
@@ -161,13 +188,14 @@ function initialisesdUI() {
     wDiv.innerHTML = `<span class="move-w"></span><span class="loading dot2"></span>`;
 
     bestMovePopup.addEventListener("click", () => {
-      const start = document
-        .querySelector(".best-move")
-        .getAttribute("data-start-square");
-      const end = document
-        .querySelector(".best-move")
-        .getAttribute("data-end-square");
-      document.querySelector("." + start).click();
+      // const start = document
+      //   .querySelector(".best-move")
+      //   .getAttribute("data-start-square");
+      // const end = document
+      //   .querySelector(".best-move")
+      //   .getAttribute("data-end-square");
+      // document.querySelector("." + start).click();
+      findBestMove(true);
     });
   }
 }
