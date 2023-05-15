@@ -49,7 +49,7 @@ function readCurrentBoardFen() {
   }
   const board = row.reverse().join("/");
   // const blackMoves = document.querySelectorAll(".black.node.selected");
-  const whiteMoves = document.querySelectorAll(".white.node.selected");
+  const whiteMoves = document.querySelector(".white.node.selected");
   const whoMoveNext = whiteMoves ? "b" : "w";
 
   //const kq = 'KQkq'
@@ -91,13 +91,13 @@ async function findBestMove(force = false) {
 }
 
 function kqStatus() {
-  const w = getCastleingStatus("w");
-  const b = getCastleingStatus("b");
+  const w = getCastletatus("w");
+  const b = getCastletatus("b");
 
   if (w == "-" && b === "-") return "- -";
   return w + b;
 }
-function getCastleingStatus(mover) {
+function getCastletatus(mover) {
   let king = mover === "b" ? "king-black" : "white-king";
   let query = mover === "b" ? ".black.node" : ".white.node";
   const findMoves = [...document.querySelectorAll(query + " span")].map((x) =>
