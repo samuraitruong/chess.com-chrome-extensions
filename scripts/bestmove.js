@@ -48,9 +48,9 @@ function readCurrentBoardFen() {
     row.push(fen);
   }
   const board = row.reverse().join("/");
-  const blackMoves = document.querySelectorAll(".black.node");
-  const whiteMoves = document.querySelectorAll(".white.node");
-  const whoMoveNext = whiteMoves.length > blackMoves.length ? "b" : "w";
+  // const blackMoves = document.querySelectorAll(".black.node.selected");
+  const whiteMoves = document.querySelectorAll(".white.node.selected");
+  const whoMoveNext = whiteMoves ? "b" : "w";
 
   //const kq = 'KQkq'
   const kq = kqStatus();
@@ -121,54 +121,76 @@ function getCastleingStatus(mover) {
   if (mover === "b") return "kq";
   return "KQ";
 }
+function uniqueMove(moves) {
+  const result = [];
+  const dict = {};
+  for (const m of moves) {
+    if (!dict[m.pv]) {
+      dict[m.pv] = true;
+      result.push(m);
+    }
+  }
+  return result;
+}
 function updateUI(result, who) {
+  console.log("update UI", who);
+  const div = document.querySelector(`.best-move .move-${who}`);
   if (!result) {
+    div.innerText = "";
+    div.parentNode.setAttribute("class", "waiting " + who);
+
     return;
   }
-  const { bestmove, info } = result;
+  const { bestmove, info } = result || {};
   const matchedMoves =
-    info.filter((x) => x.pv && x.pv.includes(bestmove)) || [];
+    info.filter((x) => x.pv && x.pv.split(" ")[0] === bestmove) || [];
+
   const matesMove = matchedMoves.filter((x) => x.score?.unit === "mate");
 
   matesMove.sort((a, b) => {
+    if (who === "b") {
+      return a.score?.value - b.score?.value;
+    }
     return b.score?.value - a.score?.value;
   });
 
-  const allBestMoves = [...matesMove, ...matchedMoves];
-  const div = document.querySelector(`.best-move .move-${who}`);
+  matchedMoves.sort((a, b) => {
+    if (who === "b") {
+      return a.score?.value - b.score?.value;
+    }
+    return b.score?.value - a.score?.value;
+  });
+
+  const allBestMoves = [...matesMove, ...uniqueMove(matchedMoves)];
   div.innerText = bestmove;
 
-  if (bestmove) {
-    console.log(
-      `%cBest move for ${who}: ${bestmove}`,
-      `color: ${
-        who === "w" ? "green" : "red"
-      }; font-size: 45px; font-weight: bold;`
-    );
+  console.log(
+    `%cBest move for ${who}: ${bestmove}`,
+    `color: ${
+      who === "w" ? "green" : "red"
+    }; font-size: 45px; font-weight: bold;`
+  );
 
-    for (let i = 0; i < Math.min(3, allBestMoves.length); i++) {
-      const item = allBestMoves[i];
-      if (item) {
-        const message = `${item.score.unit}(${item.score?.value}) -> ${item.pv}`;
-        if (i === 0) {
-          div.setAttribute("title", message);
-        }
-        console.log(`%c${i + 1}. ${message}`, "color: blue; font-size: 20px;");
+  for (let i = 0; i < Math.min(30, allBestMoves.length); i++) {
+    const item = allBestMoves[i];
+    if (item) {
+      const message = `${item.score.unit}(${item.score?.value}) -> ${item.pv}`;
+      if (i === 0) {
+        div.setAttribute("title", message);
       }
+      console.log(`%c${i + 1}. ${message}`, "color: blue; font-size: 20px;");
     }
-    const start = bestmove.substr(0, 2);
-    const end = bestmove.substr(2, 2);
-
-    const startPost = start.charCodeAt(0) - 96;
-    const endPos = end.charCodeAt(0) - 96;
-    const startSquare = startPost + start[1];
-    const endSquare = endPos + end[1];
-    div.parentNode.setAttribute("class", "idle " + who);
-    div.setAttribute("data-start-square", "square-" + startSquare);
-    div.setAttribute("data-end-square", "square-" + endSquare);
-  } else {
-    div.parentNode.setAttribute("class", "waiting " + who);
   }
+  const start = bestmove.substr(0, 2);
+  const end = bestmove.substr(2, 2);
+
+  const startPost = start.charCodeAt(0) - 96;
+  const endPos = end.charCodeAt(0) - 96;
+  const startSquare = startPost + start[1];
+  const endSquare = endPos + end[1];
+  div.parentNode.setAttribute("class", "idle " + who);
+  div.setAttribute("data-start-square", "square-" + startSquare);
+  div.setAttribute("data-end-square", "square-" + endSquare);
 }
 function initialisesdUI() {
   if (!bestMovePopup) {
