@@ -134,6 +134,7 @@ function uniqueMove(moves) {
 }
 function updateUI(result, who) {
   console.log("update UI", who);
+
   const div = document.querySelector(`.best-move .move-${who}`);
   if (!result) {
     div.innerText = "";
@@ -191,8 +192,73 @@ function updateUI(result, who) {
   div.parentNode.setAttribute("class", "idle " + who);
   div.setAttribute("data-start-square", "square-" + startSquare);
   div.setAttribute("data-end-square", "square-" + endSquare);
+
+  const bestMove = allBestMoves[0];
+  console.log(bestMove);
+
+  const eloBar = document.querySelector(".board-layout-evaluation");
+  eloBar.style.width = "27px";
+  const evaluation = eloBar.querySelector("#evaluation");
+  evaluation.style.width = "27px";
+
+  const capturesPieces =
+    document.querySelector("captured-pieces") ||
+    document.querySelector(".captured-pieces");
+  if (capturesPieces) {
+    const viewAs =
+      capturesPieces.getAttribute("color") === "2" ? "white" : "black";
+
+    let displayText = Math.abs((bestMove.score.value * 1.0) / 100.0).toFixed(1);
+    if (!displayText.includes(".")) {
+      displayText += ".0";
+    }
+
+    let isMating = false;
+    if (bestMove.score.unit === "mate") {
+      displayText = "M" + bestMove.score.value;
+      isMating = true;
+    }
+    let reversedClass = "";
+    console.log("viewAs", viewAs, bestMove.score.value);
+    if (viewAs === "white") {
+      const calculated = (bestMove.score.value * 100) / 500;
+      let percentage = Math.min(50 - calculated / 2, 99);
+      if (isMating) {
+        percentage = 99;
+      }
+
+      if (bestMove.score.value > 0) {
+        reversedClass = "elo-bar-reverse";
+      }
+      evaluation.innerHTML = `<div class='elo-bar ${reversedClass}'> 
+      <div class='elo-value' style='height: ${percentage}%'> </div>
+      <div class='elo-text'>${displayText}</div>
+    </div>`;
+    }
+
+    if (viewAs === "black") {
+      const calculated = (bestMove.score.value * 100) / 500;
+      let percentage = Math.min(50 + calculated / 2, 99);
+      if (isMating) {
+        percentage = 99;
+      }
+
+      if (bestMove.score.value < 0) {
+        reversedClass = "elo-bar-reverse";
+      }
+
+      evaluation.innerHTML = `<div class='elo-bar ${reversedClass}'> 
+        <div class='elo-value' style='height: ${percentage}%'> </div>
+        <div class='elo-text'>${displayText}</div>
+      </div>`;
+    }
+  }
+}
+function handleRouteChange() {
+  console.log("handleRouteChange");
 }
 function initialisesdUI() {
+  window.addEventListener("popstate", handleRouteChange);
   if (!bestMovePopup) {
     bestMovePopup = document.createElement("div");
     const bDiv = document.createElement("div");
@@ -203,7 +269,6 @@ function initialisesdUI() {
     bestMovePopup.appendChild(wDiv);
     bestMovePopup.appendChild(bDiv);
     document.body.appendChild(bestMovePopup);
-
     bestMovePopup.setAttribute("class", "best-move");
 
     bDiv.innerHTML = `<span class="move-b"></span><span class="loading dot2"></span>`;
