@@ -196,11 +196,30 @@ function updateUI(result, who) {
   const bestMove = allBestMoves[0];
   console.log(bestMove);
 
+  updateEloBar(bestMove);
+}
+
+function updateEloBar(bestMove) {
   const eloBar = document.querySelector(".board-layout-evaluation");
   eloBar.style.width = "27px";
   const evaluation = eloBar.querySelector("#evaluation");
   evaluation.style.width = "27px";
 
+  let customEloBar = document.querySelector(".elo-bar");
+
+  if (!customEloBar) {
+    evaluation.innerHTML = `
+    <div id='custom-elo-bar' class='elo-bar view-as-white'> 
+      <div class='elo-value' style='height: 50%'> </div>
+      <div class='elo-text'>0.0</div>
+    </div>`;
+  }
+  customEloBar = document.querySelector(".elo-bar");
+
+  const valueBar = document.querySelector("#custom-elo-bar .elo-value");
+  const textBar = document.querySelector("#custom-elo-bar .elo-text");
+
+  console.log("customEloBar", customEloBar);
   const capturesPieces =
     document.querySelector("captured-pieces") ||
     document.querySelector(".captured-pieces");
@@ -208,9 +227,14 @@ function updateUI(result, who) {
     const viewAs =
       capturesPieces.getAttribute("color") === "2" ? "white" : "black";
 
-    let displayText = Math.abs((bestMove.score.value * 1.0) / 100.0).toFixed(1);
+    let displayText = Math.abs(bestMove.score.value / 100.0).toFixed(1);
     if (!displayText.includes(".")) {
       displayText += ".0";
+    }
+    if (bestMove.score.value > 0) {
+      displayText = "+" + displayText;
+    } else {
+      displayText = "-" + displayText;
     }
 
     let isMating = false;
@@ -218,40 +242,30 @@ function updateUI(result, who) {
       displayText = "M" + bestMove.score.value;
       isMating = true;
     }
-    let reversedClass = "";
-    console.log("viewAs", viewAs, bestMove.score.value);
-    if (viewAs === "white") {
-      const calculated = (bestMove.score.value * 100) / 500;
-      let percentage = Math.min(50 - calculated / 2, 99);
-      if (isMating) {
-        percentage = 99;
-      }
+    let percentage = 50;
 
-      if (bestMove.score.value > 0) {
-        reversedClass = "elo-bar-reverse";
+    console.log("viewAs", viewAs, bestMove.score.value);
+    customEloBar.setAttribute("class", "elo-bar view-as-" + viewAs);
+
+    if (viewAs === "white") {
+      const calculated = (bestMove.score.value * 100) / 800;
+      percentage = Math.min(50 - calculated / 2, 99);
+      if (isMating) {
+        percentage = 0;
       }
-      evaluation.innerHTML = `<div class='elo-bar ${reversedClass}'> 
-      <div class='elo-value' style='height: ${percentage}%'> </div>
-      <div class='elo-text'>${displayText}</div>
-    </div>`;
     }
 
     if (viewAs === "black") {
-      const calculated = (bestMove.score.value * 100) / 500;
-      let percentage = Math.min(50 + calculated / 2, 99);
+      const calculated = (bestMove.score.value * 100) / 800;
+      percentage = Math.min(50 + calculated / 2, 99);
       if (isMating) {
-        percentage = 99;
+        percentage = 100;
       }
-
-      if (bestMove.score.value < 0) {
-        reversedClass = "elo-bar-reverse";
-      }
-
-      evaluation.innerHTML = `<div class='elo-bar ${reversedClass}'> 
-        <div class='elo-value' style='height: ${percentage}%'> </div>
-        <div class='elo-text'>${displayText}</div>
-      </div>`;
     }
+
+    valueBar.style.height = percentage + "%";
+    textBar.innerText = displayText;
+    console.log("displayText", displayText);
   }
 }
 function handleRouteChange() {
