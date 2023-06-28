@@ -66,6 +66,7 @@ async function findBestMove(force = false) {
     // console.log(currentBoardFen);
     lastFen = currentBoardFen;
     updateUI(null, whoMoveNext);
+    console.log(whoMoveNext, currentBoardFen);
     const result = await (
       await fetch(
         `https://no-cors.fly.dev/cors/https://stockfish-chess-api-p7dmqtfpta-km.a.run.app/bestmove?depth=${STOCKFISH_DEPTH}&fen=${lastFen}`
@@ -194,7 +195,7 @@ function updateUI(result, who) {
   div.setAttribute("data-end-square", "square-" + endSquare);
 
   const bestMove = allBestMoves[0];
-  console.log(bestMove);
+  // console.log(bestMove);
 
   updateEloBar(bestMove);
 }
@@ -219,7 +220,6 @@ function updateEloBar(bestMove) {
   const valueBar = document.querySelector("#custom-elo-bar .elo-value");
   const textBar = document.querySelector("#custom-elo-bar .elo-text");
 
-  console.log("customEloBar", customEloBar);
   const capturesPieces =
     document.querySelector("captured-pieces") ||
     document.querySelector(".captured-pieces");
@@ -265,12 +265,9 @@ function updateEloBar(bestMove) {
 
     valueBar.style.height = percentage + "%";
     textBar.innerText = displayText;
-    console.log("displayText", displayText);
   }
 }
-function handleRouteChange() {
-  console.log("handleRouteChange");
-}
+function handleRouteChange() {}
 function initialisesdUI() {
   window.addEventListener("popstate", handleRouteChange);
   if (!bestMovePopup) {

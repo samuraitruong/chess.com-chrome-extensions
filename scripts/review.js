@@ -7,12 +7,8 @@ const openTabsSequentially = async (links) => {
     await new Promise((resolve) => setTimeout(resolve, delay));
     const text = (link.innerText || link.textContent).trim();
     if (text === "Review") {
-      const tab = window.open(link.href + "?tab=review", "_blank");
-      setTimeout(() => {
-        tab.close();
-      }, 5000);
+      chrome.runtime.sendMessage({ action: "openTab", url: link.href });
     } else {
-      // console.log("Not a review", link);
     }
   }
 };
@@ -20,7 +16,7 @@ const openTabsSequentially = async (links) => {
 function addReviewAllButton() {
   const button = document.createElement("button");
   button.style.padding = "10px";
-  button.style.backgroundColor = "const(--globalColorWin)";
+  button.style.backgroundColor = "var(--globalColorWin)";
   button.style.color = "white";
   button.style.float = "right";
   button.style.fontSize = "clamp(1.4rem,4vw,1.8rem)";
@@ -28,7 +24,7 @@ function addReviewAllButton() {
   button.style.border = "none";
   button.style.fontWeight = 600;
   button.style.margin = "15px 25px";
-  button.innerText = "Review All games";
+  button.innerText = "Review All";
   button.addEventListener("click", function () {
     const links = document.querySelectorAll(
       ".archived-games-table a.archived-games-link, .archive-games-table a.archive-games-link"
