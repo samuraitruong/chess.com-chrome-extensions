@@ -21,9 +21,3 @@ function getTemporaryData(key) {
   }
   return null;
 }
-
-window.utils = {
-  setTemporaryData,
-  getTemporaryData,
-};
-console.log("gelloo");
