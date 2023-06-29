@@ -201,10 +201,11 @@ function updateUI(result, who) {
 }
 
 function updateEloBar(bestMove) {
+  if (!bestMove) {
+    return;
+  }
   const eloBar = document.querySelector(".board-layout-evaluation");
-  eloBar.style.width = "27px";
   const evaluation = eloBar.querySelector("#evaluation");
-  evaluation.style.width = "27px";
 
   let customEloBar = document.querySelector(".elo-bar");
 
@@ -245,14 +246,16 @@ function updateEloBar(bestMove) {
     let percentage = 50;
 
     console.log("viewAs", viewAs, bestMove.score.value);
-    customEloBar.setAttribute("class", "elo-bar view-as-" + viewAs);
 
     if (viewAs === "white") {
+      console.log("bestMove", bestMove.score);
       const calculated = (bestMove.score.value * 100) / 800;
+      console.log("calculated", calculated);
       percentage = Math.min(50 - calculated / 2, 99);
       if (isMating) {
         percentage = 0;
       }
+      console.log("percentage", percentage);
     }
 
     if (viewAs === "black") {
@@ -263,8 +266,18 @@ function updateEloBar(bestMove) {
       }
     }
 
-    valueBar.style.height = percentage + "%";
-    textBar.innerText = displayText;
+    if (percentage < 0) {
+      percentage = 0;
+    }
+    console.log("percentage", percentage, displayText);
+    if (evaluation) {
+      evaluation.style.width = "27px";
+      eloBar.style.width = "27px";
+      customEloBar.setAttribute("class", "elo-bar view-as-" + viewAs);
+
+      valueBar.style.height = Math.max(0, percentage) + "%";
+      textBar.innerText = displayText;
+    }
   }
 }
 function handleRouteChange() {}
