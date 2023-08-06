@@ -213,7 +213,7 @@ function updateEloBar(bestMove) {
 
   let customEloBar = document.querySelector(".elo-bar");
 
-  if (!customEloBar) {
+  if (!customEloBar && evaluation) {
     evaluation.innerHTML = `
     <div id='custom-elo-bar' class='elo-bar view-as-white'> 
       <div class='elo-value' style='height: 50%'> </div>
