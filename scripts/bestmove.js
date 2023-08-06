@@ -152,6 +152,10 @@ function updateUI(res, who) {
   const matchedMoves =
     info.filter((x) => x.pv && x.pv.split(" ")[0] === bestmove) || [];
 
+  const onStepMove =
+    info.find((x) => x.pv && x.pv === bestmove);
+
+
   const matesMove = matchedMoves.filter((x) => x.score?.unit === "mate");
 
   matesMove.sort((a, b) => {
@@ -198,7 +202,7 @@ function updateUI(res, who) {
   div.setAttribute("data-start-square", "square-" + startSquare);
   div.setAttribute("data-end-square", "square-" + endSquare);
 
-  const bestMove = allBestMoves[0];
+  const bestMove = !matesMove.length == 0 ? onStepMove || allBestMoves[0] : allBestMoves[0];
   // console.log(bestMove);
   updateEloBar(bestMove);
   printChessboardFromFEN(fen)
@@ -273,7 +277,6 @@ function updateEloBar(bestMove) {
     if (percentage < 0) {
       percentage = 0;
     }
-    console.log("percentage", percentage, displayText);
     if (evaluation) {
       evaluation.style.width = "27px";
       eloBar.style.width = "27px";

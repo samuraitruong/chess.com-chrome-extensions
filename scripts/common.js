@@ -100,6 +100,7 @@ function printChessboardFromFEN(fen) {
 }
 
 function displayImageInConsole(fen, el) {
+  if (!fen) return
   let viewAs = 'w'
   const capturesPieces =
     document.querySelector("captured-pieces") ||
