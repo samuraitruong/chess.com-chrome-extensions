@@ -3,7 +3,12 @@
   "version": "1.0",
   "description": "The cheating tool that invoke backend stockfish to find the best move when you play",
   "manifest_version": 3,
-  "permissions": ["storage", "activeTab", "scripting", "tabs"],
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
   "background": {
     "service_worker": "scripts/worker.js"
   },
@@ -23,19 +28,33 @@
         "https://www.chess.com/game/*",
         "https://www.chess.com/play/*"
       ],
-      "js": ["scripts/bestmove.js"],
-      "css": ["styles/chess.css", "styles/spinners.css"]
+      "js": [
+        "scripts/common.js",
+        "scripts/bestmove.js"
+      ],
+      "css": [
+        "styles/chess.css",
+        "styles/spinners.css"
+      ]
     },
     {
       "matches": [
         "https://www.chess.com/member/*",
         "https://www.chess.com/games/archive/*"
       ],
-      "js": ["scripts/common.js", "scripts/review.js"]
+      "js": [
+        "scripts/common.js",
+        "scripts/review.js"
+      ]
     },
     {
-      "matches": ["https://www.chess.com/analysis/*"],
-      "js": ["scripts/common.js", "scripts/analysis.js"]
+      "matches": [
+        "https://www.chess.com/analysis/*"
+      ],
+      "js": [
+        "scripts/common.js",
+        "scripts/analysis.js"
+      ]
     }
   ]
 }

@@ -83,7 +83,7 @@ async function findBestMove(force = false) {
       lastBoard === "" ||
       lastBoard === defaultFEN
     ) {
-      updateUI(result.result, whoMoveNext);
+      updateUI(result, whoMoveNext);
     } else {
       console.log("Board out of sync...");
       //
@@ -133,16 +133,17 @@ function uniqueMove(moves) {
   }
   return result;
 }
-function updateUI(result, who) {
+function updateUI(res, who) {
   console.log("update UI", who);
-
   const div = document.querySelector(`.best-move .move-${who}`);
-  if (!result) {
+  if (!res) {
     div.innerText = "";
     div.parentNode.setAttribute("class", "waiting " + who);
 
     return;
   }
+  const { fen, result } = res
+
   const { bestmove, info } = result || {};
   const matchedMoves =
     info.filter((x) => x.pv && x.pv.split(" ")[0] === bestmove) || [];
@@ -168,8 +169,7 @@ function updateUI(result, who) {
 
   console.log(
     `%cBest move for ${who}: ${bestmove}`,
-    `color: ${
-      who === "w" ? "green" : "red"
+    `color: ${who === "w" ? "green" : "red"
     }; font-size: 45px; font-weight: bold;`
   );
 
@@ -196,8 +196,8 @@ function updateUI(result, who) {
 
   const bestMove = allBestMoves[0];
   // console.log(bestMove);
-
   updateEloBar(bestMove);
+  printChessboardFromFEN(fen)
 }
 
 function updateEloBar(bestMove) {
@@ -280,7 +280,7 @@ function updateEloBar(bestMove) {
     }
   }
 }
-function handleRouteChange() {}
+function handleRouteChange() { }
 function initialisesdUI() {
   window.addEventListener("popstate", handleRouteChange);
   if (!bestMovePopup) {
