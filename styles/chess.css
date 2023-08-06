@@ -8,8 +8,13 @@
   cursor: pointer;
   background: #eee;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-  opacity: 0.3;
+  xopacity: 0.3;
 }
+
+.best-move:hover .miniboard {
+  display: none
+}
+
 .best-move div {
   width: 100%;
   height: 50px;
@@ -19,9 +24,11 @@
   font-size: 24px;
   font-weight: 500;
 }
+
 .best-move:hover {
   opacity: 1;
 }
+
 .best-move:hover div {
   color: green;
   background: #999;
@@ -31,6 +38,7 @@
   background: #222;
   color: red;
 }
+
 .best-move:hover div.w {
   background: #eee;
 }
@@ -38,6 +46,7 @@
 .idle .loading {
   display: none;
 }
+
 .loading {
   color: #987 !important;
 }
@@ -73,6 +82,14 @@
 .view-as-white {
   background-color: #d3d7da !important;
 }
+
 .view-as-white .elo-value {
   background-color: #404040;
+}
+
+.miniboard {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  margin-top: -100%;
 }

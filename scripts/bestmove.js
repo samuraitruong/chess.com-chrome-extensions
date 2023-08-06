@@ -133,6 +133,7 @@ function uniqueMove(moves) {
   }
   return result;
 }
+
 function updateUI(res, who) {
   console.log("update UI", who);
   const div = document.querySelector(`.best-move .move-${who}`);
@@ -143,7 +144,10 @@ function updateUI(res, who) {
     return;
   }
   const { fen, result } = res
+  const miniboard = document.querySelector('.miniboard')
+  // miniboard.setAttribute('src', 'https://no-cors.fly.dev/cors/https://chess-board.fly.dev/?size=100&noframe=true')
 
+  displayImageInConsole(fen, miniboard)
   const { bestmove, info } = result || {};
   const matchedMoves =
     info.filter((x) => x.pv && x.pv.split(" ")[0] === bestmove) || [];
@@ -285,6 +289,8 @@ function initialisesdUI() {
   window.addEventListener("popstate", handleRouteChange);
   if (!bestMovePopup) {
     bestMovePopup = document.createElement("div");
+    const miniBoard = document.createElement("img");
+    miniBoard.setAttribute("class", "miniboard");
     const bDiv = document.createElement("div");
     bDiv.setAttribute("class", "b");
     const wDiv = document.createElement("div");
@@ -292,6 +298,7 @@ function initialisesdUI() {
 
     bestMovePopup.appendChild(wDiv);
     bestMovePopup.appendChild(bDiv);
+    bestMovePopup.appendChild(miniBoard);
     document.body.appendChild(bestMovePopup);
     bestMovePopup.setAttribute("class", "best-move");
 

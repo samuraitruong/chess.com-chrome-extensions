@@ -99,8 +99,33 @@ function printChessboardFromFEN(fen) {
   console.log(output, ...colors);
 }
 
+function displayImageInConsole(fen, el) {
+  let viewAs = 'w'
+  const capturesPieces =
+    document.querySelector("captured-pieces") ||
+    document.querySelector(".captured-pieces");
+  if (capturesPieces) {
+    viewAs =
+      capturesPieces.getAttribute("color") === "2" ? "w" : "b";
+
+  }
+  const imageUrl = `https://no-cors.fly.dev/cors/https://chess-board.fly.dev?frame=false&viewer=${viewAs}&fen=${fen}&size=100`
+  fetch(imageUrl)
+    .then(response => response.blob())
+    .then(blob => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+
+        el.setAttribute("src", "data:" + reader.result)
+        // console.log("%c this is image to render", `background-image: url('${reader.result}'); width:300px; height:300px`);
+      };
+      reader.readAsDataURL(blob);
+    })
+    .catch(error => console.error('Error fetching the image:', error));
+}
+
 
 // Example usage:
 const fenString = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
 printChessboardFromFEN(fenString);
-
+// displayImageInConsole(fenString)
