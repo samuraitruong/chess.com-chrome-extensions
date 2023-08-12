@@ -120,25 +120,53 @@ function displayImageInConsole(fen, el) {
     .catch((error) => console.error("Error fetching the image:", error));
 }
 
-function convertMovesToFriendlyNames(fen, moves) {
-  // console.log(fen, moves)
+function convertMovesToFriendlyNames(fen, moves, signleValue = false) {
+
+  const mapInvalidMove = {
+    "e8g8": "o-o",
+    "e8a8": "o-o-o",
+    "e1g1": "o-o",
+    "e1a1": "o-o-o"
+  }
+
   const [t1, t2] = fen.split(" ");
   const cleanFen = [t1, t2].join(" ");
   const board = new Chess(cleanFen);
-  // board.load(fen);
-  console.log("board.turn()", board.turn());
+  const startPlayer = board.turn()
+
   const moveList = moves.split(" ");
   const sanMoves = moveList.map((move) => {
-    const parsedMove = board.move(move, { sloppy: true });
-    // console.log(move, parsedMove)
-    return parsedMove ? parsedMove.san : move;
+    try {
+      const parsedMove = board.move(mapInvalidMove[move] || move, { sloppy: true });
+      return parsedMove ? parsedMove.san : move;
+    } catch (err) {
+
+      return move
+    }
   });
 
   const validSanMoves = sanMoves.filter((move) => move !== null);
-  const result = validSanMoves.join(" ");
-  // console.log(board.history())
-  // return board.history().join(' ')
-  return result;
+  if (signleValue && validSanMoves.length === 1)
+    return validSanMoves[0]
+  let index = 0
+  let results = ""
+  const indexAppend = startPlayer === "w" ? 0 : 1
+  for (const validMove of validSanMoves) {
+    if (index === 0) {
+      if (startPlayer === "b")
+        results = "1..."
+
+    }
+    else
+      if (index % 2 === indexAppend) {
+        results += `${Math.floor(index / 2) + 1 + indexAppend}.`
+      }
+
+    results += validMove + " "
+    index++
+  }
+
+  return results;
 }
 
 // Example usage:

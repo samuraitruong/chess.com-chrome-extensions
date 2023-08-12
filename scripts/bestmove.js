@@ -173,10 +173,10 @@ function updateUI(res, who) {
   });
 
   const allBestMoves = [...matesMove, ...uniqueMove(matchedMoves)];
-  div.innerText = bestmove;
-
+  const bestMoveName = convertMovesToFriendlyNames(fen, bestmove, true)
+  div.innerText = bestMoveName;
   console.log(
-    `%cBest move for ${who}: ${bestmove}`,
+    `%cBest move for ${who}: ${bestmove} (${bestMoveName})`,
     `color: ${who === "w" ? "green" : "red"
     }; font-size: 45px; font-weight: bold;`
   );
@@ -185,7 +185,7 @@ function updateUI(res, who) {
     const item = allBestMoves[i];
     if (item) {
       const friendlyMoves = convertMovesToFriendlyNames(fen, item.pv)
-      const message = `${item.score.unit}(${item.score?.value}) -> ${item.pv} =  ${friendlyMoves} `;
+      const message = `${item.score.unit}(${item.score?.value}) -> ${friendlyMoves} `;
       if (i === 0) {
         div.setAttribute("title", message);
       }
