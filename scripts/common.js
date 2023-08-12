@@ -125,8 +125,31 @@ function displayImageInConsole(fen, el) {
     .catch(error => console.error('Error fetching the image:', error));
 }
 
+function convertMovesToFriendlyNames(fen, moves) {
+  // console.log(fen, moves)
+  const board = new Chess(fen)
+  // board.load(fen);
+  console.log("board.turn()", board.turn())
+  const moveList = moves.split(' ');
+  const sanMoves = moveList.map(move => {
+    const parsedMove = board.move(move, { sloppy: false });
+    // console.log(move, parsedMove)
+    return parsedMove ? parsedMove.san : null;
+  });
+
+  const validSanMoves = sanMoves.filter(move => move !== null);
+  const result = validSanMoves.join(' ');
+  // console.log(board.history())
+  // return board.history().join(' ')
+  return result
+}
 
 // Example usage:
 const fenString = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
 printChessboardFromFEN(fenString);
 // displayImageInConsole(fenString)
+
+const moves = 'e4e5 f6d7 e5e6 f7e6 d5e6 d7c5';
+
+const friendlyNames = convertMovesToFriendlyNames("4r1k1/4rpp1/3R1n1p/3P4/1p2P3/1Ppb1NNP/5KP1/4R3 b", moves);
+console.log(friendlyNames);

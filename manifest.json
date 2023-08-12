@@ -29,6 +29,7 @@
         "https://www.chess.com/play/*"
       ],
       "js": [
+        "scripts/chess.js",
         "scripts/common.js",
         "scripts/bestmove.js"
       ],

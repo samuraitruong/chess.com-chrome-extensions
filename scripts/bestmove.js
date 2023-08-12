@@ -2,7 +2,7 @@ const space = "_";
 let lastFen = "";
 let bestMovePopup;
 const defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 1 0";
-const STOCKFISH_DEPTH = 15;
+const STOCKFISH_DEPTH = 16;
 const debounce = (func, delay) => {
   let debounceTimer;
   return function () {
@@ -184,7 +184,8 @@ function updateUI(res, who) {
   for (let i = 0; i < Math.min(30, allBestMoves.length); i++) {
     const item = allBestMoves[i];
     if (item) {
-      const message = `${item.score.unit}(${item.score?.value}) -> ${item.pv}`;
+      const friendlyMoves = convertMovesToFriendlyNames(fen, item.pv)
+      const message = `${item.score.unit}(${item.score?.value}) -> ${item.pv} =  ${friendlyMoves} `;
       if (i === 0) {
         div.setAttribute("title", message);
       }
