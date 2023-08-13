@@ -140,8 +140,11 @@ function updateUI(res, who) {
   if (!res) {
     div.innerText = "";
     div.parentNode.setAttribute("class", "waiting " + who);
-
+    document.querySelector('.best-move').setAttribute('class', 'best-move loading-square')
     return;
+  }
+  else {
+    document.querySelector('.best-move').setAttribute('class', 'best-move')
   }
   const { fen, result } = res
   const miniboard = document.querySelector('.miniboard')
@@ -325,16 +328,17 @@ function initialisesdUI() {
 const mutationCallback = debounce(() => {
   initialisesdUI();
   findBestMove();
-}, 500);
+}, 200);
 
 window.addEventListener("load", (event) => {
+  console.log("register event .....")
   initialisesdUI();
   findBestMove();
   const o = new MutationObserver(mutationCallback);
-
-  o.observe(document.querySelector(".board"), {
+  o.observe(document.querySelector(".board-layout-chessboard"), {
     attributes: true,
     childList: true,
+    subtree: true
   });
 });
 
