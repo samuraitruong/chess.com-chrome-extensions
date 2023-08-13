@@ -25,8 +25,3 @@
 
 10. **Disable or Remove**:
  - If you want to disable or remove the extension, you can do so from the `chrome://extensions` page.
-
-11. **Enjoy Your Custom Extension!**
-
-Remember that extensions installed in developer mode may have security implications. Only install extensions from trusted sources or if you're confident in their source code.
-
