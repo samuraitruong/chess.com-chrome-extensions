@@ -135,7 +135,7 @@ function uniqueMove(moves) {
 }
 
 function updateUI(res, who) {
-  console.log("update UI", who);
+  // console.log("update UI", who);
   const div = document.querySelector(`.best-move .move-${who}`);
   if (!res) {
     div.innerText = "";
@@ -151,6 +151,7 @@ function updateUI(res, who) {
   // miniboard.setAttribute('src', 'https://no-cors.fly.dev/cors/https://chess-board.fly.dev/?size=100&noframe=true')
 
   displayImageInConsole(fen, miniboard)
+
   const { bestmove, info } = result || {};
   const matchedMoves =
     info.filter((x) => x.pv && x.pv.split(" ")[0] === bestmove) || [];
@@ -183,7 +184,7 @@ function updateUI(res, who) {
     `color: ${who === "w" ? "green" : "red"
     }; font-size: 45px; font-weight: bold;`
   );
-
+  // displayMoveList()
   for (let i = 0; i < Math.min(30, allBestMoves.length); i++) {
     const item = allBestMoves[i];
     if (item) {
@@ -205,16 +206,22 @@ function updateUI(res, who) {
   div.parentNode.setAttribute("class", "idle " + who);
   div.setAttribute("data-start-square", "square-" + startSquare);
   div.setAttribute("data-end-square", "square-" + endSquare);
-
-  const bestMove = !matesMove.length == 0 ? onStepMove || allBestMoves[0] : allBestMoves[0];
-  // console.log(bestMove);
-  updateEloBar(bestMove);
+  console.log('who', who)
+  let bestMove = who == 'w' ? allBestMoves.pop() : allBestMoves[0];
+  if (matesMove.length > 0) {
+    bestMove = matesMove[0]
+  }
+  console.log(bestMove.score);
+  updateEloBar(bestMove, who);
   printChessboardFromFEN(fen)
 }
 
-function updateEloBar(bestMove) {
+function updateEloBar(bestMove, who) {
   if (!bestMove) {
     return;
+  }
+  if (who === 'b') {
+    bestMove.score.value = -bestMove.score.value
   }
   const eloBar = document.querySelector(".board-layout-evaluation");
   const evaluation = eloBar.querySelector("#evaluation");
@@ -257,17 +264,17 @@ function updateEloBar(bestMove) {
     }
     let percentage = 50;
 
-    console.log("viewAs", viewAs, bestMove.score.value);
+    // console.log("viewAs", viewAs, bestMove.score.value);
 
     if (viewAs === "white") {
-      console.log("bestMove", bestMove.score);
+      //  console.log("bestMove", bestMove.score);
       const calculated = (bestMove.score.value * 100) / 800;
-      console.log("calculated", calculated);
+      // console.log("calculated", calculated);
       percentage = Math.min(50 - calculated / 2, 99);
       if (isMating) {
         percentage = 0;
       }
-      console.log("percentage", percentage);
+      // console.log("percentage", percentage);
     }
 
     if (viewAs === "black") {
@@ -281,17 +288,47 @@ function updateEloBar(bestMove) {
     if (percentage < 0) {
       percentage = 0;
     }
+    console.log("calculate", percentage)
     if (evaluation) {
-      evaluation.style.width = "27px";
-      eloBar.style.width = "27px";
+      evaluation.style.width = "25px";
+      eloBar.style.width = "25px";
       customEloBar.setAttribute("class", "elo-bar view-as-" + viewAs);
 
       valueBar.style.height = Math.max(0, percentage) + "%";
       textBar.innerText = displayText;
     }
+    else {
+      let el = document.querySelector('.my-custom-elo-bar')
+
+      if (!el) {
+        el = document.createElement('div')
+        el.className = 'my-custom-elo-bar'
+        el.innerHTML = `
+        <div class='elo-value' id="myelo"></div>
+        <span id='elo-text' >0.0</span>
+        `
+        document.querySelector('#board-layout-evaluation').appendChild(el)
+      }
+      el.setAttribute("class", "my-custom-elo-bar viewer-" + viewAs);
+      const span = document.querySelector('#elo-text')
+      span.innerHTML = displayText
+      const eloBarValue = document.querySelector('#myelo')
+      eloBarValue.style.height = Math.max(0, percentage) + "%";
+    }
   }
 }
 function handleRouteChange() { }
+
+function displayMoveList() {
+  const existingDiv = document.querySelector('.evaluation-settings-component')
+  const moveListDiv = document.querySelector('.my-move-list')
+  if (moveListDiv) {
+    const moveDivs = document.createElement('div');
+    moveDivs.textContent = 'New Div';
+    moveDivs.setAttribute('class', 'my-move-list')
+    existingDiv.insertAdjacentElement('afterend', moveDivs);
+  }
+}
 function initialisesdUI() {
   window.addEventListener("popstate", handleRouteChange);
   if (!bestMovePopup) {
@@ -307,7 +344,9 @@ function initialisesdUI() {
     bestMovePopup.appendChild(bDiv);
     bestMovePopup.appendChild(miniBoard);
     document.body.appendChild(bestMovePopup);
+
     bestMovePopup.setAttribute("class", "best-move");
+
 
     bDiv.innerHTML = `<span class="move-b"></span><span class="loading dot2"></span>`;
     wDiv.innerHTML = `<span class="move-w"></span><span class="loading dot2"></span>`;

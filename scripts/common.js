@@ -64,13 +64,14 @@ function printChessboardFromFEN(fen) {
     p: "♟", // Black Pawn
     "": "♛",
   };
+
   const pieceColors = {
-    K: "color: green; background-color: transparent;",
-    Q: "color: green; background-color: transparent;",
-    R: "color: green; background-color: transparent;",
-    B: "color: green; background-color: transparent;",
-    N: "color: green; background-color: transparent;",
-    P: "color: green; background-color: transparent;",
+    K: "color: #00008b; background-color: transparent;",
+    Q: "color: #00008b; background-color: transparent;",
+    R: "color: #00008b; background-color: transparent;",
+    B: "color: #00008b; background-color: transparent;",
+    N: "color: #00008b; background-color: transparent;",
+    P: "color: #00008b; background-color: transparent;",
     k: "color: red; background-color: transparent;",
     q: "color: red; background-color: transparent;",
     r: "color: red; background-color: transparent;",
@@ -155,6 +156,8 @@ function convertMovesToFriendlyNames(fen, moves, signleValue = false) {
     if (index === 0) {
       if (startPlayer === "b")
         results = "1..."
+      else
+        results = "1."
 
     }
     else
