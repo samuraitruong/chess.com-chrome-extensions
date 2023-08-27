@@ -207,7 +207,7 @@ function updateUI(res, who) {
   div.setAttribute("data-start-square", "square-" + startSquare);
   div.setAttribute("data-end-square", "square-" + endSquare);
   console.log('who', who)
-  let bestMove = who == 'w' ? allBestMoves.pop() : allBestMoves[0];
+  let bestMove = who == 'b' ? allBestMoves.pop() : allBestMoves[0];
   if (matesMove.length > 0) {
     bestMove = matesMove[0]
   }
@@ -247,7 +247,7 @@ function updateEloBar(bestMove, who) {
     const viewAs =
       capturesPieces.getAttribute("color") === "2" ? "white" : "black";
 
-    let displayText = Math.abs(bestMove.score.value / 100.0).toFixed(1);
+    let displayText = Math.abs(bestMove.score.value / 200.0).toFixed(1);
     if (!displayText.includes(".")) {
       displayText += ".0";
     }
@@ -259,7 +259,7 @@ function updateEloBar(bestMove, who) {
 
     let isMating = false;
     if (bestMove.score.unit === "mate") {
-      displayText = "M" + bestMove.score.value;
+      displayText = "M" + Math.abs(bestMove.score.value);
       isMating = true;
     }
     let percentage = 50;
@@ -272,7 +272,11 @@ function updateEloBar(bestMove, who) {
       // console.log("calculated", calculated);
       percentage = Math.min(50 - calculated / 2, 99);
       if (isMating) {
-        percentage = 0;
+        console.log("mate", bestMove.score)
+        if (bestMove.score.value > 0) {
+          percentage = 0;
+        } else
+          percentage = 100;
       }
       // console.log("percentage", percentage);
     }
@@ -281,7 +285,11 @@ function updateEloBar(bestMove, who) {
       const calculated = (bestMove.score.value * 100) / 800;
       percentage = Math.min(50 + calculated / 2, 99);
       if (isMating) {
-        percentage = 100;
+        console.log("mate", bestMove.score)
+        if (bestMove.score.value > 0) {
+          percentage = 100;
+        } else
+          percentage = 0;
       }
     }
 
