@@ -227,7 +227,6 @@ function updateEloBar(bestMove, who) {
   const evaluation = eloBar.querySelector("#evaluation");
 
   let customEloBar = document.querySelector(".elo-bar");
-
   if (!customEloBar && evaluation) {
     evaluation.innerHTML = `
     <div id='custom-elo-bar' class='elo-bar view-as-white'> 
@@ -241,8 +240,8 @@ function updateEloBar(bestMove, who) {
   const textBar = document.querySelector("#custom-elo-bar .elo-text");
 
   const capturesPieces =
-    document.querySelector("captured-pieces") ||
-    document.querySelector(".captured-pieces");
+    document.querySelector("wc-captured-piece") ||
+    document.querySelector(".player-pieces");
   if (capturesPieces) {
     const viewAs =
       capturesPieces.getAttribute("color") === "2" ? "white" : "black";
