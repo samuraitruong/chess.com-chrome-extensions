@@ -122,54 +122,56 @@ function displayImageInConsole(fen, el) {
 }
 
 function convertMovesToFriendlyNames(fen, moves, signleValue = false) {
-
   const mapInvalidMove = {
-    "e8g8": "o-o",
-    "e8a8": "o-o-o",
-    "e1g1": "o-o",
-    "e1a1": "o-o-o"
-  }
+    e8g8: "o-o",
+    e8a8: "o-o-o",
+    e1g1: "o-o",
+    e1a1: "o-o-o",
+  };
 
   const [t1, t2] = fen.split(" ");
   const cleanFen = [t1, t2].join(" ");
   const board = new Chess(cleanFen);
-  const startPlayer = board.turn()
+  const startPlayer = board.turn();
 
   const moveList = moves.split(" ");
   const sanMoves = moveList.map((move) => {
     try {
-      const parsedMove = board.move(mapInvalidMove[move] || move, { sloppy: true });
+      const parsedMove = board.move(mapInvalidMove[move] || move, {
+        sloppy: true,
+      });
       return parsedMove ? parsedMove.san : move;
     } catch (err) {
-
-      return move
+      return move;
     }
   });
 
   const validSanMoves = sanMoves.filter((move) => move !== null);
-  if (signleValue && validSanMoves.length === 1)
-    return validSanMoves[0]
-  let index = 0
-  let results = ""
-  const indexAppend = startPlayer === "w" ? 0 : 1
+  if (signleValue && validSanMoves.length === 1) return validSanMoves[0];
+  let index = 0;
+  let results = "";
+  const indexAppend = startPlayer === "w" ? 0 : 1;
   for (const validMove of validSanMoves) {
     if (index === 0) {
-      if (startPlayer === "b")
-        results = "1..."
-      else
-        results = "1."
-
+      if (startPlayer === "b") results = "1...";
+      else results = "1.";
+    } else if (index % 2 === indexAppend) {
+      results += `${Math.floor(index / 2) + 1 + indexAppend}.`;
     }
-    else
-      if (index % 2 === indexAppend) {
-        results += `${Math.floor(index / 2) + 1 + indexAppend}.`
-      }
 
-    results += validMove + " "
-    index++
+    results += validMove + " ";
+    index++;
   }
 
   return results;
+}
+
+function calculateWinChange(centipawns) {
+  const chance = Math.max(
+    0,
+    Math.min(100, 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * centipawns)) - 1))
+  );
+  return ((chance * 100) / 100).toFixed(1);
 }
 
 // Example usage:

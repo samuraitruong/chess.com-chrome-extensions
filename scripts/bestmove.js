@@ -140,25 +140,24 @@ function updateUI(res, who) {
   if (!res) {
     div.innerText = "";
     div.parentNode.setAttribute("class", "waiting " + who);
-    document.querySelector('.best-move').setAttribute('class', 'best-move loading-square')
+    document
+      .querySelector(".best-move")
+      .setAttribute("class", "best-move loading-square");
     return;
+  } else {
+    document.querySelector(".best-move").setAttribute("class", "best-move");
   }
-  else {
-    document.querySelector('.best-move').setAttribute('class', 'best-move')
-  }
-  const { fen, result } = res
-  const miniboard = document.querySelector('.miniboard')
+  const { fen, result } = res;
+  const miniboard = document.querySelector(".miniboard");
   // miniboard.setAttribute('src', 'https://no-cors.fly.dev/cors/https://chess-board.fly.dev/?size=100&noframe=true')
 
-  displayImageInConsole(fen, miniboard)
+  displayImageInConsole(fen, miniboard);
 
   const { bestmove, info } = result || {};
   const matchedMoves =
     info.filter((x) => x.pv && x.pv.split(" ")[0] === bestmove) || [];
 
-  const onStepMove =
-    info.find((x) => x.pv && x.pv === bestmove);
-
+  const onStepMove = info.find((x) => x.pv && x.pv === bestmove);
 
   const matesMove = matchedMoves.filter((x) => x.score?.unit === "mate");
 
@@ -177,18 +176,19 @@ function updateUI(res, who) {
   });
 
   const allBestMoves = [...matesMove, ...uniqueMove(matchedMoves)];
-  const bestMoveName = convertMovesToFriendlyNames(fen, bestmove, true)
+  const bestMoveName = convertMovesToFriendlyNames(fen, bestmove, true);
   div.innerText = bestMoveName;
   console.log(
     `%cBest move for ${who}: ${bestmove} (${bestMoveName})`,
-    `color: ${who === "w" ? "green" : "red"
+    `color: ${
+      who === "w" ? "green" : "red"
     }; font-size: 45px; font-weight: bold;`
   );
   // displayMoveList()
   for (let i = 0; i < Math.min(30, allBestMoves.length); i++) {
     const item = allBestMoves[i];
     if (item) {
-      const friendlyMoves = convertMovesToFriendlyNames(fen, item.pv)
+      const friendlyMoves = convertMovesToFriendlyNames(fen, item.pv);
       const message = `${item.score.unit}(${item.score?.value}) -> ${friendlyMoves} `;
       if (i === 0) {
         div.setAttribute("title", message);
@@ -206,22 +206,22 @@ function updateUI(res, who) {
   div.parentNode.setAttribute("class", "idle " + who);
   div.setAttribute("data-start-square", "square-" + startSquare);
   div.setAttribute("data-end-square", "square-" + endSquare);
-  console.log('who', who)
-  let bestMove = who == 'b' ? allBestMoves.pop() : allBestMoves[0];
+  console.log("who", who);
+  let bestMove = who == "b" ? allBestMoves.pop() : allBestMoves[0];
   if (matesMove.length > 0) {
-    bestMove = matesMove[0]
+    bestMove = matesMove[0];
   }
   console.log(bestMove.score);
   updateEloBar(bestMove, who);
-  printChessboardFromFEN(fen)
+  printChessboardFromFEN(fen);
 }
 
 function updateEloBar(bestMove, who) {
   if (!bestMove) {
     return;
   }
-  if (who === 'b') {
-    bestMove.score.value = -bestMove.score.value
+  if (who === "b") {
+    bestMove.score.value = -bestMove.score.value;
   }
   const eloBar = document.querySelector(".board-layout-evaluation");
   const evaluation = eloBar.querySelector("#evaluation");
@@ -262,78 +262,67 @@ function updateEloBar(bestMove, who) {
       isMating = true;
     }
     let percentage = 50;
-
+    let winingChange = calculateWinChange(bestMove.score.value);
     // console.log("viewAs", viewAs, bestMove.score.value);
-
+    console.log("winingChange", viewAs, winingChange);
     if (viewAs === "white") {
-      //  console.log("bestMove", bestMove.score);
-      const calculated = (bestMove.score.value * 100) / 800;
-      // console.log("calculated", calculated);
-      percentage = Math.min(50 - calculated / 2, 99);
+      winingChange = 100 - winingChange;
+
       if (isMating) {
-        console.log("mate", bestMove.score)
+        console.log("mate", bestMove.score);
         if (bestMove.score.value > 0) {
-          percentage = 0;
-        } else
-          percentage = 100;
+          winingChange = 0;
+        } else winingChange = 100;
       }
       // console.log("percentage", percentage);
     }
 
     if (viewAs === "black") {
-      const calculated = (bestMove.score.value * 100) / 800;
-      percentage = Math.min(50 + calculated / 2, 99);
       if (isMating) {
-        console.log("mate", bestMove.score)
+        console.log("mate", bestMove.score);
         if (bestMove.score.value > 0) {
-          percentage = 100;
-        } else
-          percentage = 0;
+          winingChange = 100;
+        } else winingChange = 0;
       }
     }
 
-    if (percentage < 0) {
-      percentage = 0;
-    }
-    console.log("calculate", percentage)
     if (evaluation) {
       evaluation.style.width = "25px";
       eloBar.style.width = "25px";
       customEloBar.setAttribute("class", "elo-bar view-as-" + viewAs);
 
-      valueBar.style.height = Math.max(0, percentage) + "%";
+      valueBar.style.height = Math.max(0, winingChange) + "%";
       textBar.innerText = displayText;
-    }
-    else {
-      let el = document.querySelector('.my-custom-elo-bar')
+    } else {
+      let el = document.querySelector(".my-custom-elo-bar");
 
       if (!el) {
-        el = document.createElement('div')
-        el.className = 'my-custom-elo-bar'
+        el = document.createElement("div");
+        el.className = "my-custom-elo-bar";
         el.innerHTML = `
         <div class='elo-value' id="myelo"></div>
         <span id='elo-text' >0.0</span>
-        `
-        document.querySelector('#board-layout-evaluation').appendChild(el)
+        `;
+        document.querySelector("#board-layout-evaluation").appendChild(el);
       }
       el.setAttribute("class", "my-custom-elo-bar viewer-" + viewAs);
-      const span = document.querySelector('#elo-text')
-      span.innerHTML = displayText
-      const eloBarValue = document.querySelector('#myelo')
+      const span = document.querySelector("#elo-text");
+      span.innerHTML = displayText;
+      const eloBarValue = document.querySelector("#myelo");
       eloBarValue.style.height = Math.max(0, percentage) + "%";
     }
   }
 }
-function handleRouteChange() { }
+function handleRouteChange() {}
 
 function displayMoveList() {
-  const existingDiv = document.querySelector('.evaluation-settings-component')
-  const moveListDiv = document.querySelector('.my-move-list')
+  const existingDiv = document.querySelector(".evaluation-settings-component");
+  const moveListDiv = document.querySelector(".my-move-list");
   if (moveListDiv) {
-    const moveDivs = document.createElement('div');
-    moveDivs.textContent = 'New Div';
-    moveDivs.setAttribute('class', 'my-move-list')
-    existingDiv.insertAdjacentElement('afterend', moveDivs);
+    const moveDivs = document.createElement("div");
+    moveDivs.textContent = "New Div";
+    moveDivs.setAttribute("class", "my-move-list");
+    existingDiv.insertAdjacentElement("afterend", moveDivs);
   }
 }
 function initialisesdUI() {
@@ -353,7 +342,6 @@ function initialisesdUI() {
     document.body.appendChild(bestMovePopup);
 
     bestMovePopup.setAttribute("class", "best-move");
-
 
     bDiv.innerHTML = `<span class="move-b"></span><span class="loading dot2"></span>`;
     wDiv.innerHTML = `<span class="move-w"></span><span class="loading dot2"></span>`;
@@ -377,14 +365,14 @@ const mutationCallback = debounce(() => {
 }, 200);
 
 window.addEventListener("load", (event) => {
-  console.log("register event .....")
+  console.log("register event .....");
   initialisesdUI();
   findBestMove();
   const o = new MutationObserver(mutationCallback);
   o.observe(document.querySelector(".board-layout-chessboard"), {
     attributes: true,
     childList: true,
-    subtree: true
+    subtree: true,
   });
 });
 
