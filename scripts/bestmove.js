@@ -69,7 +69,7 @@ async function findBestMove(force = false) {
     console.log(whoMoveNext, currentBoardFen);
     const result = await (
       await fetch(
-        `https://no-cors.fly.dev/cors/https://stockfish-chess-api-p7dmqtfpta-km.a.run.app/bestmove?depth=${STOCKFISH_DEPTH}&fen=${lastFen}`
+        `https://stockfish-chess-api-p7dmqtfpta-km.a.run.app/bestmove?depth=${STOCKFISH_DEPTH}&fen=${lastFen}`
       )
     ).json();
 
@@ -246,7 +246,7 @@ function updateEloBar(bestMove, who) {
     const viewAs =
       capturesPieces.getAttribute("color") === "2" ? "white" : "black";
 
-    let displayText = Math.abs(bestMove.score.value / 200.0).toFixed(1);
+    let displayText = Math.abs(bestMove.score.value / 100.0).toFixed(1);
     if (!displayText.includes(".")) {
       displayText += ".0";
     }
@@ -309,7 +309,7 @@ function updateEloBar(bestMove, who) {
       const span = document.querySelector("#elo-text");
       span.innerHTML = displayText;
       const eloBarValue = document.querySelector("#myelo");
-      eloBarValue.style.height = Math.max(0, percentage) + "%";
+      eloBarValue.style.height = winingChange + "%";
     }
   }
 }
