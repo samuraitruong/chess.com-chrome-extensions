@@ -241,10 +241,14 @@ function updateEloBar(bestMove, who) {
 
   const capturesPieces =
     document.querySelector("wc-captured-piece") ||
+    document.querySelector("wc-captured-pieces") ||
     document.querySelector(".player-pieces");
+
+  // const elm = document.querySelectorAll("wc-captured-pieces")[1];
+
   if (capturesPieces) {
     const viewAs =
-      capturesPieces.getAttribute("color") === "2" ? "white" : "black";
+      capturesPieces.getAttribute("player-color") === "2" ? "white" : "black";
 
     let displayText = Math.abs(bestMove.score.value / 100.0).toFixed(1);
     if (!displayText.includes(".")) {
