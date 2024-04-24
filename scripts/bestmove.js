@@ -100,7 +100,7 @@ function kqStatus() {
 }
 function getCastletatus(mover) {
   let king = mover === "b" ? "king-black" : "white-king";
-  let query = mover === "b" ? ".black.node" : ".white.node";
+  let query = mover === "b" ? ".node.black-move" : ".node.white-move";
   const findMoves = [...document.querySelectorAll(query + " span")].map((x) =>
     x.getAttribute("data-figurine")
   );
