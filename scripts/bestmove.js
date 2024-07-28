@@ -49,9 +49,10 @@ function readCurrentBoardFen() {
   }
   const board = row.reverse().join("/");
   // const blackMoves = document.querySelectorAll(".black.node.selected");
-  const whiteMoves = document.querySelector(".white.node.selected");
-  const whoMoveNext = whiteMoves ? "b" : "w";
-
+  const whiteMoves = document.querySelectorAll(".node.white-move");
+  const blackMoves = document.querySelectorAll(".node.black-move");
+  const whoMoveNext = whiteMoves.length == blackMoves.length ? "w" : "b";
+  // console.log("who move next", whoMoveNext, whiteMoves.length, blackMoves.length)
   //const kq = 'KQkq'
   const kq = kqStatus();
   return [`${board} ${whoMoveNext} ${kq} - 1 0`, hasPiece, whoMoveNext];
@@ -180,8 +181,7 @@ function updateUI(res, who) {
   div.innerText = bestMoveName;
   console.log(
     `%cBest move for ${who}: ${bestmove} (${bestMoveName})`,
-    `color: ${
-      who === "w" ? "green" : "red"
+    `color: ${who === "w" ? "green" : "red"
     }; font-size: 45px; font-weight: bold;`
   );
   // displayMoveList()
@@ -317,7 +317,7 @@ function updateEloBar(bestMove, who) {
     }
   }
 }
-function handleRouteChange() {}
+function handleRouteChange() { }
 
 function displayMoveList() {
   const existingDiv = document.querySelector(".evaluation-settings-component");
@@ -366,7 +366,7 @@ function initialisesdUI() {
 const mutationCallback = debounce(() => {
   initialisesdUI();
   findBestMove();
-}, 200);
+}, 500);
 
 window.addEventListener("load", (event) => {
   console.log("register event .....");
